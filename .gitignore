@@ -2,3 +2,4 @@ node_modules/
 yarn.lock
 append-file.avro
 append-file.brotli
+append-file.jsons

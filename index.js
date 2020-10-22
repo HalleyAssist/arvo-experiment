@@ -162,7 +162,7 @@ const fjs = require('fast-json-stringify')
 async function writeJsons(stream, object, schemaName, schema){
     let s = schemas[schemaName]
     if(!s){
-        await stream.write(`${schema}\r${schemaName}\r${JSON.stringify(schema)}`)
+        await stream.write(`*\r${schemaName}\r${JSON.stringify(schema)}`)
         s = schemas[schemaName] = fjs(schema)
     }
 
@@ -171,7 +171,7 @@ async function writeJsons(stream, object, schemaName, schema){
 
 
 async function benchJsons(){
-    const appender = await fsPromises.open('append-file.json', 'w')
+    const appender = await fsPromises.open('append-file.jsons', 'w')
 
     //const SchemaA = {_id: 'string', test: 'string[]', strs: 'string[]'}//['number']
     //const SchemaB = {operation: 'string'}
