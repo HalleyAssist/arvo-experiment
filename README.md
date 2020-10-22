@@ -1,0 +1,2 @@
+ - Avro disk space not great with block flushing
+ - Performance not great with flushing
