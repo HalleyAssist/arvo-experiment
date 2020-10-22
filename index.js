@@ -95,11 +95,11 @@ async function benchJson(){
 
     const sync = util.promisify(fs.fdatasync)
     console.log(new Date())
-    for(let i=0;i<10000;i++){
+    for(let i=0;i<100000;i++){
         await appender.write(JSON.stringify({ _id: "abc", test: [1, 2, 3], strs: ["abc","def","ghk"] })+"\n")
-        await sync(appender.fd)
+        //await sync(appender.fd)
         await appender.write(JSON.stringify({ operation: "delete" })+"\n")
-        await sync(appender.fd)
+        //await sync(appender.fd)
     }
     console.log(new Date())
 
@@ -138,16 +138,17 @@ async function benchBrotli(){
 }
 const schemas = {}
 
-/*const {sjs, attr} = require('slow-json-stringify')
-async function writeJsons(stream, object, schemaName, schema){
+const {sjs, attr} = require('slow-json-stringify')
+async function writeJsonSlow(stream, object, schemaName, schema){
     let s = schemas[schemaName]
     if(!s){
-        await stream.write(`${schema}\r${schemaName}\r${JSON.stringify(schema)}`)
+        await stream.write(`*\r${schemaName}\r${JSON.stringify(schema)}`)
         let schemaParsed = {}
         for(let k in schema){
             let v = schema[k]
             if(Array.isArray(v)){
-                schemaParsed[k] = array(v[0])
+                const fn = attr(v[0]).serializer
+                schemaParsed[k] = attr('array', fn)
             }else{
                 schemaParsed[k] = attr(v)
             }
@@ -156,7 +157,7 @@ async function writeJsons(stream, object, schemaName, schema){
     }
 
     await stream.write(`${schemaName}\r${s(object)}\n`)
-}*/
+}
 
 const fjs = require('fast-json-stringify')
 async function writeJsons(stream, object, schemaName, schema){
@@ -169,6 +170,26 @@ async function writeJsons(stream, object, schemaName, schema){
     await stream.write(`${schemaName}\r${s(object)}\n`)
 }
 
+async function benchJsonSlow(){
+    const appender = await fsPromises.open('append-file.jsons', 'w')
+
+    const SchemaA = {_id: 'string', test: ['string'], strs: ['string']}//['number']
+    const SchemaB = {operation: 'string'}
+
+    
+    const sync = util.promisify(fs.fdatasync)
+    console.log(new Date())
+    for(let i=0;i<100000;i++){
+        await writeJsonSlow(appender, { _id: "abc", test: [1, 2, 3], strs: ["abc","def","ghk"] }, 'a', SchemaA)
+        //await sync(appender.fd)
+        await writeJsonSlow(appender, { operation: "delete" }, 'b', SchemaB)
+        //await sync(appender.fd)
+    }
+    console.log(new Date())
+
+    //await encoder.write({ operation: "delete" })
+    await appender.close()
+}
 
 async function benchJsons(){
     const appender = await fsPromises.open('append-file.jsons', 'w')
@@ -205,11 +226,11 @@ async function benchJsons(){
     }
     const sync = util.promisify(fs.fdatasync)
     console.log(new Date())
-    for(let i=0;i<10000;i++){
+    for(let i=0;i<100000;i++){
         await writeJsons(appender, { _id: "abc", test: [1, 2, 3], strs: ["abc","def","ghk"] }, 'a', SchemaA)
-        await sync(appender.fd)
+        //await sync(appender.fd)
         await writeJsons(appender, { operation: "delete" }, 'b', SchemaB)
-        await sync(appender.fd)
+        //await sync(appender.fd)
     }
     console.log(new Date())
 
@@ -221,6 +242,8 @@ async function benchJsons(){
 async function m(){
     //console.log("AVSC")
     //await benchAvro()
+    console.log("JSONSlow")
+    await benchJsonSlow()
     console.log("JSONS")
     await benchJsons()
     console.log("JSON")
