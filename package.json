@@ -18,6 +18,8 @@
   "homepage": "https://github.com/HalleyAssist/avro-experiment#readme",
   "dependencies": {
     "avsc": "git+https://github.com/ronaldocpontes/avsc.git#fileAppender",
+    "fast-json-stringify": "^2.2.9",
+    "slow-json-stringify": "^2.0.0",
     "through2": "^4.0.2"
   }
 }
